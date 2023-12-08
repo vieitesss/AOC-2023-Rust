@@ -1,5 +1,6 @@
 mod day1;
 mod day2;
+mod day3;
 
 use std::env;
 
@@ -17,6 +18,7 @@ fn main() {
         0 => println!("Invalid number"),
         1 => day1::resolve(),
         2 => day2::resolve(),
+        3 => day3::resolve(),
         _ => println!("Invalid number")
     }
 }
