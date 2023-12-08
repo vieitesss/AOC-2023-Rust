@@ -1,94 +1,125 @@
-#![allow(dead_code)]
-use std::{
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use crate::Solution;
+use std::cmp::min;
 
-const INPUT_PATH: &str = "data/day3/input.txt";
-const EXAMPLE1_PATH: &str = "data/day3/example1.txt";
-const _EXAMPLE2_PATH: &str = "data/day3/example2.txt";
+pub struct Day3;
 
-pub fn resolve() {
-    println!("Part 1: {}", part_1());
-    // println!("Part 2: {}", part2());
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Point {
     x: usize,
     y: usize,
 }
 
-fn part_1() -> u32 {
-    let file = File::open(INPUT_PATH).expect("no such file");
-    let buf = BufReader::new(file);
-    let matrix: Vec<String> = buf
-        .lines()
-        .map(|l| l.expect("could not parse line"))
-        .collect();
+#[derive(Debug)]
+pub struct Grid(Vec<Vec<char>>);
 
-    get_sum(&matrix)
-}
+impl Grid {
+    fn get_lines(&self) -> usize {
+        self.0.len()
+    }
 
-fn get_sum(matrix: &[String]) -> u32 {
-    let mut sum: u32 = 0;
+    fn get_columns(&self) -> usize {
+        self.0[0].len()
+    }
 
-    let mut number: Vec<Point> = vec![];
-    for (x, line) in matrix.iter().enumerate() {
-        for (y, char) in line.chars().enumerate() {
-            if char.is_digit(10) {
-                number.push(Point { x, y });
-            } else if number.len() > 0 {
-                if is_part_number(number.first().unwrap(), number.last().unwrap(), &matrix) {
-                    sum += compose_number(&number, &matrix);
+    fn get_top_bound(&self, point: &Point) -> usize {
+        if point.x > 0 {
+            point.x - 1
+        } else {
+            0
+        }
+    }
+
+    fn get_bottom_bound(&self, point: &Point) -> usize {
+        min(point.x + 1, self.get_lines() - 1)
+    }
+
+    fn get_left_bound(&self, point: &Point) -> usize {
+        if point.y > 0 {
+            point.y - 1
+        } else {
+            0
+        }
+    }
+
+    fn get_right_bound(&self, point: &Point) -> usize {
+        min(point.y + 1, self.get_columns() - 1)
+    }
+
+    // (top, bottom, left, right)
+    fn get_bounds(&self, first: &Point, last: &Point) -> (usize, usize, usize, usize) {
+        (
+            self.get_top_bound(first),
+            self.get_bottom_bound(first),
+            self.get_left_bound(first),
+            self.get_right_bound(last),
+        )
+    }
+
+    fn get_part_numbers(&self) -> Vec<u32> {
+        let mut part_numbers: Vec<u32> = vec![];
+
+        let mut number: Vec<Point> = vec![];
+        for (x, line) in self.0.iter().enumerate() {
+            for (y, char) in line.iter().enumerate() {
+                if char.is_digit(10) {
+                    number.push(Point { x, y });
+                } else if number.clone().len() > 0 {
+                    if self.is_part_number(&number) {
+                        part_numbers.push(self.compose_number(&number));
+                    }
+                    number.clear();
                 }
-                number.clear();
             }
         }
+
+        part_numbers
     }
 
-    sum
-}
+    fn is_part_number(&self, number: &Vec<Point>) -> bool {
+        let first = number.first().unwrap();
+        let last = number.last().unwrap();
+        let (up, down, left, right) = self.get_bounds(first, last);
 
-fn is_part_number(first: &Point, last: &Point, matrix: &[String]) -> bool {
-    let up = if first.x > 0 { first.x - 1 } else { first.x };
-    let down = if first.x < matrix.len() - 1 {
-        first.x + 1
-    } else {
-        first.x
-    };
-    let left = if first.y > 0 { first.y - 1 } else { first.y };
-    let right = if last.y < matrix[0].len() - 1 {
-        last.y + 1
-    } else {
-        last.y
-    };
-
-    for x in up..down + 1 {
-        for y in left..right + 1 {
-            if x == first.x && y >= first.y && y <= last.y {
-                continue;
-            }
-            let c = matrix[x].chars().nth(y).unwrap();
-            if !c.is_digit(10) && c != '.' {
-                return true;
+        for x in up..=down {
+            for y in left..=right {
+                if x == first.x && y >= first.y && y <= last.y {
+                    continue;
+                }
+                let c = self.0[x][y];
+                if !c.is_digit(10) && c != '.' {
+                    return true;
+                }
             }
         }
+
+        false
     }
 
-    false
+    fn compose_number(&self, number_points: &Vec<Point>) -> u32 {
+        number_points
+            .iter()
+            .map(|p| self.0[p.x][p.y])
+            .fold("".to_string(), |cur, val| format!("{}{}", cur, val))
+            .parse::<u32>()
+            .unwrap()
+    }
 }
 
-fn compose_number(array_number: &[Point], matrix: &[String]) -> u32 {
-    let mut number: String = String::new();
+impl Solution for Day3 {
+    type ParsedInput = Grid;
 
-    for p in array_number.iter() {
-        number.push(matrix[p.x].chars().nth(p.y).unwrap());
+    fn parse_input(input_lines: &str) -> Self::ParsedInput {
+        let data = input_lines.lines().map(|l| l.chars().collect()).collect();
+
+        Grid(data)
     }
 
-    number.parse::<u32>().unwrap()
-}
+    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
+        format!("{}", parsed_input.get_part_numbers().iter().sum::<u32>())
+    }
 
-fn part_2() -> u32 {
-    todo!();
+    fn part_2(_parsed_input: &mut Self::ParsedInput) -> String {
+        // TODO: implement part 1
+        "".to_string()
+    }
 }
