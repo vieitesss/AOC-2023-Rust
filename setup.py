@@ -43,7 +43,7 @@ def download_problem(number: int):
             code = article.find("pre").find("code")
             f.write(delete_tags(str(code)))
 
-    with open(f"data/day{number}/problem.txt", "w") as f:
+    with open(f"data/day{number}/problem.md", "w") as f:
         for article in articles:
             f.write(html2text(str(article)))
 
