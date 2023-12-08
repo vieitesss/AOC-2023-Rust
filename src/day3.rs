@@ -51,25 +51,27 @@ fn get_sum(matrix: &[String]) -> u32 {
 }
 
 fn is_part_number(first: &Point, last: &Point, matrix: &[String]) -> bool {
-    let first_x = if first.x > 0 { first.x - 1 } else { first.x };
-    let last_x = if first.x < matrix.len() - 1 {
+    let up = if first.x > 0 { first.x - 1 } else { first.x };
+    let down = if first.x < matrix.len() - 1 {
         first.x + 1
     } else {
         first.x
     };
-    let first_y = if first.y > 0 { first.y - 1 } else { first.y };
-    let last_y = if last.y < matrix[0].len() - 1 {
+    let left = if first.y > 0 { first.y - 1 } else { first.y };
+    let right = if last.y < matrix[0].len() - 1 {
         last.y + 1
     } else {
         last.y
     };
 
-    for x in first_x..last_x + 1 {
-        for y in first_y..last_y + 1 {
-            // if x == first.x && y >= first.y && y <= last.y { continue; }
+    for x in up..down + 1 {
+        for y in left..right + 1 {
+            if x == first.x && y >= first.y && y <= last.y {
+                continue;
+            }
             let c = matrix[x].chars().nth(y).unwrap();
-            if !c.is_digit(10) && c != '.' { // is symbol
-                return true
+            if !c.is_digit(10) && c != '.' {
+                return true;
             }
         }
     }
