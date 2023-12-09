@@ -93,25 +93,24 @@ def setup_data(number: int):
 def setup_program(number: int):
     logging.debug(f"Setting up program for day {number}")
 
-    template = f"""use std::fs::read_to_string;
+    template = f"""use crate::Solution;
 
-const INPUT_PATH: &str = "data/day{number}/input.txt";
-const EXAMPLE1_PATH: &str = "data/day{number}/example1.txt";
-const EXAMPLE2_PATH: &str = "data/day{number}/example2.txt";
+pub struct Day{number};
 
-pub fn resolve() {{
-    println!("Hello day {number}");
+impl Solution for Day3 {{
+    type ParsedInput = String;
 
-    println!("Part 1: {{}}", part1());
-    println!("Part 2: {{}}", part2());
-}}
+    fn parse_input(input_lines: &str) -> Self::ParsedInput {{
+        todo!()
+    }}
 
-fn part_1() -> u32 {{
-    todo!();
-}}
+    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {{
+        todo!()
+    }}
 
-fn part_2() -> u32 {{
-    todo!();
+    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {{
+        todo!()
+    }}
 }}"""
 
     # write template to file /days/day{number}/solution.rs
