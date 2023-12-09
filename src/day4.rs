@@ -4,47 +4,73 @@ pub struct Day4;
 
 #[derive(Debug)]
 pub struct Card {
-    id: usize,
     winning: Vec<String>,
     playing: Vec<String>,
 }
 
 impl Card {
+    fn get_matches(&self) -> usize {
+        self.winning.iter().fold(0, |cur, n| {
+            if self.playing.contains(n) {
+                return cur + 1;
+            }
+
+            cur
+        })
+    }
+
     fn get_points(&self) -> usize {
-        let mut n: usize = 0;
-        for w in self.winning.iter() {
-            if self.playing.contains(w) {
-                n += 1;
+        let n = self.get_matches();
+
+        if n > 2 {
+            return vec![2; (n - 1) as usize].iter().fold(1, |a, b| a * b);
+        }
+
+        n
+    }
+}
+
+#[derive(Debug)]
+pub struct Table(Vec<Card>);
+
+impl Table {
+    fn get_all_points(&self) -> String {
+        self.0
+            .iter()
+            .map(|c| c.get_points())
+            .sum::<usize>()
+            .to_string()
+    }
+
+    fn get_all_instances(&self) -> String {
+        let mut instances = vec![1; self.0.len()];
+
+        for (i, card) in self.0.iter().enumerate() {
+            let matches = card.get_matches();
+            for x in (i + 1)..=(i + matches) {
+                instances[x] += 1 * instances[i];
             }
         }
-        match n {
-            0..=2 => n,
-            _ => vec![2; (n - 1) as usize].iter().fold(1, |a, b| a * b),
-        }
+
+        instances.iter().sum::<usize>().to_string()
     }
 }
 
 impl Solution for Day4 {
-    type ParsedInput = Vec<Card>;
+    type ParsedInput = Table;
 
     fn parse_input(input_lines: &str) -> Self::ParsedInput {
         let mut cards: Vec<Card> = vec![];
 
         for line in input_lines.lines() {
-            let id_numbers = line.split([':', '|']).collect::<Vec<&str>>();
+            let numbers: Vec<&str> = line.split([':']).nth(1).unwrap().split('|').collect();
             let c = Card {
-                id: id_numbers[0]
-                    .split_whitespace()
-                    .nth(1)
-                    .unwrap()
-                    .parse::<usize>()
-                    .unwrap(),
-                winning: id_numbers[1]
+                winning: numbers[0]
                     .trim()
                     .split_whitespace()
                     .map(|i| i.to_string())
                     .collect::<Vec<String>>(),
-                playing: id_numbers[2]
+                playing: numbers[1]
                     .trim()
                     .split_whitespace()
                     .map(|i| i.to_string())
@@ -53,18 +79,15 @@ impl Solution for Day4 {
             cards.push(c);
         }
 
-        cards
+        Table(cards)
     }
 
     fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
-        format!(
-            "{}",
-            parsed_input.iter().map(|c| c.get_points()).sum::<usize>()
-        )
+        parsed_input.get_all_points()
     }
 
     fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
-        "".to_string()
+        parsed_input.get_all_instances()
     }
 }
 
