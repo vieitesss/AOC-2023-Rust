@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from shutil import Error
 import sys
 import os
 import re
@@ -7,7 +8,11 @@ import logging
 from requests import Session
 from bs4 import BeautifulSoup
 from html2text import html2text
+import typer
+from typing_extensions import Annotated
 
+
+app = typer.Typer()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,19 +29,20 @@ except KeyError:
 
 
 def download_problem(number: int):
-    logging.info(f"Downloading problem for day {number}...")
-
-    # get html
+    """Downloads the problem for the given day and writes it to /data/day{number}/problem.md
+    and each example to /data/day{number}/example{index}.txt"""
     url = f"https://adventofcode.com/2023/day/{number}"
     r = s.get(url)
+
+    if r.status_code != 200:
+        raise Error(f"Could not download https://adventofcode.com/2023/day/{number}.")
+
     soup = BeautifulSoup(r.text, "html.parser")
 
     articles = soup.find_all("article")
 
     if articles == None:
-        logging.error(f"Could not parse https://adventofcode.com/2023/day/{number}.")
-        return
-
+        raise Error(f"Could not parse https://adventofcode.com/2023/day/{number}.")
 
     for index, article in enumerate(articles):
         with open(f"data/day{number}/example{index + 1}.txt", "w") as f:
@@ -47,57 +53,52 @@ def download_problem(number: int):
         for article in articles:
             f.write(html2text(str(article)))
 
-    logging.info(f"Problem for day {number} downloaded.")
 
 def delete_tags(text: str) -> str:
-    clean = re.compile('<.*?>')
-    cleantext = re.sub(clean, '', text)
+    """Deletes all html tags from the given text."""
+    clean = re.compile("<.*?>")
+    cleantext = re.sub(clean, "", text)
 
     return cleantext
 
 
 def download_input(number: int):
-    logging.info(f"Downloading input for day {number}...")
+    """Downloads the input for the given day and writes it to /data/day{number}/input.txt"""
     # get html
     url = f"https://adventofcode.com/2023/day/{number}/input"
     r = s.get(url)
+
+    if r.status_code != 200:
+        raise Error(f"Could not download https://adventofcode.com/2023/day/{number}.")
 
     # write text to file /data/day{number}/input.txt
     with open(f"data/day{number}/input.txt", "w") as f:
         f.write(r.text)
 
-    logging.info(f"Input for day {number} downloaded.")
-
 
 def setup_structure(number: int):
-    logging.info(f"Setting up structure for day {number}...")
-    # the number must be between 1 and 25
-    if number < 1 or number > 25:
-        print("The argument must be between 1 and 25")
-        sys.exit(1)
-
-    # create the folder structure
+    """Creates the following structure:
+    ./data/day{number}/
+    """
     data_path = f"data/day{number}"
     try:
         os.makedirs(data_path)
-        logging.info(f"Structure for day {number} set up.")
     except FileExistsError:
-        logging.info(f"Data path for day {number} already exists.")
-
-
-def setup_data(number: int):
-    download_problem(number)
-    download_input(number)
+        raise FileExistsError(f"Data path for day {number} already exists.")
 
 
 def setup_program(number: int):
-    logging.debug(f"Setting up program for day {number}")
+    """Creates the following structure:
+    ./src/day{number}.rs
+    """
+    if os.path.exists(f"src/day{number}.rs"):
+        raise FileExistsError(f"Program for day {number} already exists.")
 
     template = f"""use crate::Solution;
 
 pub struct Day{number};
 
-impl Solution for Day3 {{
+impl Solution for Day{number} {{
     type ParsedInput = String;
 
     fn parse_input(input_lines: &str) -> Self::ParsedInput {{
@@ -117,22 +118,50 @@ impl Solution for Day3 {{
     with open(f"src/day{number}.rs", "w") as f:
         f.write(template)
 
-    logging.info(f"Program for day {number} set up.")
+
+@app.command()
+def main(
+    number: Annotated[
+        int,
+        typer.Argument(min=1, max=25, help="Day number 1-25", show_default=False),
+    ]
+):
+    """Sets up the structure for the given day and downloads the problem and input."""
+    update = False
+    try:
+        logging.info(f"Setting up structure for day {number}...")
+        setup_structure(number)
+        logging.info(f"Structure for day {number} set up.")
+    except FileExistsError as e:
+        logging.error(e)
+        update = True
+
+    try:
+        logging.info(f"Downloading problem for day {number}...")
+        download_problem(number)
+        logging.info(f"Problem for day {number} downloaded.")
+    except Error as e:
+        logging.error(e)
+        sys.exit(1)
+
+    if not update:
+        try:
+            logging.info(f"Downloading problem for day {number}...")
+            download_problem(number)
+            logging.info(f"Problem for day {number} downloaded.")
+            logging.info(f"Downloading input for day {number}...")
+            download_input(number)
+            logging.info(f"Input for day {number} downloaded.")
+            logging.debug(f"Setting up program for day {number}")
+            setup_program(number)
+            logging.info(f"Program for day {number} set up.")
+            logging.info(f"Downloading problem for day {number}...")
+            download_problem(number)
+            logging.info(f"Problem for day {number} downloaded.")
+        except Error as e:
+            logging.error(e)
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    # the user has to provide a number as an argument
-    if len(sys.argv) != 2:
-        print("Usage: %s number" % sys.argv[0])
-        sys.exit(1)
-
-    # try to convert the argument to an integer
-    try:
-        number = int(sys.argv[1])
-    except ValueError:
-        logging.critical("The argument must be an integer")
-        sys.exit(1)
-
-    setup_structure(number)
-    setup_data(number)
-    setup_program(number)
+    app()
