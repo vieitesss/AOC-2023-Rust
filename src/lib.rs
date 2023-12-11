@@ -2,6 +2,7 @@ pub mod day1;
 pub mod day2;
 pub mod day3;
 pub mod day4;
+pub mod day5;
 
 
 pub trait Solution {
@@ -10,6 +11,7 @@ pub trait Solution {
     fn parse_input(input_lines: &str) -> Self::ParsedInput;
     fn part_1(parsed_input: &mut Self::ParsedInput) -> String;
     fn part_2(parsed_input: &mut Self::ParsedInput) -> String;
+
     fn solve_part_1(input_lines: &str) -> String {
         Self::part_1(&mut Self::parse_input(input_lines))
     }
@@ -40,6 +42,14 @@ pub fn solve_day(day: u8, input: u8) {
                 0 => day4::Day4::solve(include_str!("../data/day4/input.txt")),
                 1 => day4::Day4::solve(include_str!("../data/day4/example1.txt")),
                 2 => day4::Day4::solve(include_str!("../data/day4/example2.txt")),
+                _ => (String::from("Invalid..."), String::from("...input"))
+            };
+        },
+        5 => {
+            match input {
+                0 => day5::Day5::solve(include_str!("../data/day5/input.txt")),
+                1 => day5::Day5::solve(include_str!("../data/day5/example1.txt")),
+                // 2 => day5::Day5::solve(include_str!("../data/day5/example2.txt")),
                 _ => (String::from("Invalid..."), String::from("...input"))
             };
         },
