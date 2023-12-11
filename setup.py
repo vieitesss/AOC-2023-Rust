@@ -146,18 +146,12 @@ def main(
 
     if not update:
         try:
-            logging.info(f"Downloading problem for day {number}...")
-            download_problem(number)
-            logging.info(f"Problem for day {number} downloaded.")
             logging.info(f"Downloading input for day {number}...")
             download_input(number)
             logging.info(f"Input for day {number} downloaded.")
             logging.debug(f"Setting up program for day {number}")
             setup_program(number)
             logging.info(f"Program for day {number} set up.")
-            logging.info(f"Downloading problem for day {number}...")
-            download_problem(number)
-            logging.info(f"Problem for day {number} downloaded.")
         except Error as e:
             logging.error(e)
             sys.exit(1)
