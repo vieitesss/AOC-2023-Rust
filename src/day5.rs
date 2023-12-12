@@ -22,16 +22,21 @@ impl Almanac {
     }
 
     fn get_lowest_location(&self) -> String {
-        let mut min = MAX;
-        for n in self.initial_numbers.iter() {
-            let mut current = n.clone();
-            for (i, m) in self.maps.iter().enumerate() {
-                current = m.get_mapped_value(current);
-            }
-            min = if current < min { current } else { min };
-        }
+        self.initial_numbers
+            .iter()
+            .fold(MAX, |cur, n| {
+                let result = self
+                    .maps
+                    .iter()
+                    .fold(n.clone(), |cur, v| v.get_mapped_value(cur));
 
-        min.to_string()
+                if result < cur {
+                    return result;
+                }
+
+                cur
+            })
+            .to_string()
     }
 }
 
