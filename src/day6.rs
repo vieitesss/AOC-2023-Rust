@@ -1,19 +1,90 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 use crate::Solution;
 
 pub struct Day6;
 
+pub struct Paper(Vec<Race>);
+
+impl Paper {
+    fn ways_to_beat_record(&self) -> String {
+        self.0
+            .iter()
+            .fold(1, |cur, r| cur * r.get_ways_to_win())
+            .to_string()
+    }
+}
+
+#[derive(Debug)]
+struct Race {
+    time: usize,
+    record: usize,
+}
+
+impl Race {
+    fn get_ways_to_win(&self) -> usize {
+        let time = self.get_ecuation_value();
+        // TODO: Comprobacion en caso de que el +1 no funcione
+        // if !self.is_win_holding_time(time) {
+        //     time += 1;
+        // }
+
+        self.time - time - time + 1
+    }
+
+    fn get_ecuation_value(&self) -> usize {
+        let time = self.time as f32;
+        let distance = self.record as f32;
+        // TODO: si algo no funciona, quitar el +1 y comprbar en otro lado
+        ((-(time) + ((time * time + 4f32 * (-distance)) as f32).sqrt()) / (-2f32)) as usize + 1
+    }
+
+    fn is_win_holding_time(&self, time: usize) -> bool {
+        (self.time - time) * time > self.record
+    }
+}
+
 impl Solution for Day6 {
-    type ParsedInput = String;
+    type ParsedInput = Paper;
 
     fn parse_input(input_lines: &str) -> Self::ParsedInput {
-        todo!()
+        let mut lines = input_lines.lines();
+        let times_str: &str = lines.next().unwrap();
+        let distances_str: &str = lines.next().unwrap();
+
+        let times: Vec<usize> = times_str
+            .split(':')
+            .nth(1)
+            .unwrap()
+            .split_whitespace()
+            .map(|t| t.parse().unwrap())
+            .collect();
+        let distances: Vec<usize> = distances_str
+            .split(':')
+            .nth(1)
+            .unwrap()
+            .split_whitespace()
+            .map(|t| t.parse().unwrap())
+            .collect();
+
+        let mut races = vec![];
+        for i in 0..times.len() {
+            races.push(Race {
+                time: times[i],
+                record: distances[i],
+            })
+        }
+
+        Paper(races)
     }
 
     fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
-        todo!()
+        parsed_input.ways_to_beat_record()
     }
 
     fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
-        todo!()
+        "".to_string()
     }
 }
+
