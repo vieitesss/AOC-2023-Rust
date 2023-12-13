@@ -1,6 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 use crate::Solution;
 
 pub struct Day6;
@@ -14,6 +11,25 @@ impl Paper {
             .fold(1, |cur, r| cur * r.get_ways_to_win())
             .to_string()
     }
+
+    fn ways_to_beat_race(&self) -> String {
+        let race = self.get_single_race();
+        race.get_ways_to_win().to_string()
+    }
+
+    fn get_single_race(&self) -> Race {
+        let mut time_str = "".to_string();
+        let mut record_str = "".to_string();
+        for i in 0..self.0.len() {
+            time_str = format!("{}", time_str + &self.0[i].time.to_string());
+            record_str = format!("{}", record_str + &self.0[i].record.to_string());
+        }
+
+        let time = time_str.parse().unwrap();
+        let record = record_str.parse().unwrap();
+
+        Race { time, record }
+    }
 }
 
 #[derive(Debug)]
@@ -24,24 +40,15 @@ struct Race {
 
 impl Race {
     fn get_ways_to_win(&self) -> usize {
-        let time = self.get_ecuation_value();
-        // TODO: Comprobacion en caso de que el +1 no funcione
-        // if !self.is_win_holding_time(time) {
-        //     time += 1;
-        // }
+        let time = self.get_min_time();
 
         self.time - time - time + 1
     }
 
-    fn get_ecuation_value(&self) -> usize {
+    fn get_min_time(&self) -> usize {
         let time = self.time as f32;
         let distance = self.record as f32;
-        // TODO: si algo no funciona, quitar el +1 y comprbar en otro lado
         ((-(time) + ((time * time + 4f32 * (-distance)) as f32).sqrt()) / (-2f32)) as usize + 1
-    }
-
-    fn is_win_holding_time(&self, time: usize) -> bool {
-        (self.time - time) * time > self.record
     }
 }
 
@@ -84,7 +91,7 @@ impl Solution for Day6 {
     }
 
     fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
-        "".to_string()
+        parsed_input.ways_to_beat_race()
     }
 }
 
