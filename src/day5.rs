@@ -1,6 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 use std::usize::MAX;
 
 use crate::Solution;
@@ -10,6 +7,7 @@ pub struct Day5;
 #[derive(Debug)]
 pub struct Almanac {
     initial_numbers: Vec<usize>,
+    pairs: Vec<(usize, usize)>,
     maps: Vec<Map>,
 }
 
@@ -17,18 +15,23 @@ impl Almanac {
     fn new() -> Self {
         Self {
             initial_numbers: vec![],
+            pairs: vec![],
             maps: vec![],
         }
+    }
+
+    fn set_pairs(&self) -> Vec<(usize, usize)> {
+        (0..self.initial_numbers.len())
+            .step_by(2)
+            .map(|i| (self.initial_numbers[i], self.initial_numbers[i + 1]))
+            .collect::<Vec<(usize, usize)>>()
     }
 
     fn get_lowest_location(&self) -> String {
         self.initial_numbers
             .iter()
             .fold(MAX, |cur, n| {
-                let result = self
-                    .maps
-                    .iter()
-                    .fold(n.clone(), |cur, v| v.get_mapped_value(cur));
+                let result = self.get_location(*n);
 
                 if result < cur {
                     return result;
@@ -37,6 +40,56 @@ impl Almanac {
                 cur
             })
             .to_string()
+    }
+
+    fn get_lowest_location_from_pairs(&self) -> String {
+        self.pairs
+            .iter()
+            .fold(MAX, |min, pair| {
+                let min_of_pair = self.get_min_location_of_pair(*pair);
+
+                if min_of_pair < min {
+                    return min_of_pair;
+                }
+
+                min
+            })
+            .to_string()
+    }
+
+    fn get_min_location_of_pair(&self, pair: (usize, usize)) -> usize {
+        let mut min = MAX;
+        let mut current_value = pair.0;
+
+        while current_value < pair.0 + pair.1 {
+            let result = self.get_location(current_value);
+            let distance = self.get_distance_to_next_range(current_value);
+
+            min = if result < min { result } else { min };
+
+            current_value += if distance == MAX { 1 } else { distance };
+        }
+
+        min
+    }
+
+    fn get_location(&self, number: usize) -> usize {
+        self.maps.iter().fold(number, |n, m| m.get_mapped(n))
+    }
+
+    fn get_distance_to_next_range(&self, number: usize) -> usize {
+        self.maps
+            .iter()
+            .fold((number, MAX), |(n, min), m| {
+                let distance = m.get_distance_to_next_range(n);
+                let mapped = m.get_mapped(n);
+                if distance < min {
+                    return (mapped, distance);
+                }
+
+                (mapped, min)
+            })
+            .1
     }
 }
 
@@ -50,15 +103,15 @@ impl Map {
         Self { lines: vec![] }
     }
 
-    fn get_mapped_value(&self, number: usize) -> usize {
-        if let Some(tuple) = self.index_of_value(number) {
-            self.lines[tuple.0].destination + tuple.1
+    fn get_mapped(&self, number: usize) -> usize {
+        if let Some((line, index)) = self.get_line_and_index(number) {
+            self.lines[line].destination + index
         } else {
             number
         }
     }
 
-    fn index_of_value(&self, number: usize) -> Option<(usize, usize)> {
+    fn get_line_and_index(&self, number: usize) -> Option<(usize, usize)> {
         for (i, l) in self.lines.iter().enumerate() {
             if let Some(index) = l.index_of_value(number) {
                 return Some((i, index));
@@ -66,6 +119,24 @@ impl Map {
         }
 
         None
+    }
+
+    fn get_distance_to_next_range(&self, number: usize) -> usize {
+        if let Some((line, _)) = self.get_line_and_index(number) {
+            self.lines[line].source + self.lines[line].range - number
+        } else {
+            self.lines.iter().fold(MAX, |cur, l| {
+                if l.source < number {
+                    return cur;
+                }
+
+                if l.source - number < cur {
+                    return l.source - number;
+                }
+
+                cur
+            })
+        }
     }
 }
 
@@ -78,7 +149,7 @@ struct Line {
 
 impl Line {
     fn index_of_value(&self, number: usize) -> Option<usize> {
-        if self.source < number && self.source + self.range > number {
+        if self.source <= number && self.source + self.range > number {
             return Some(number - self.source);
         }
 
@@ -135,6 +206,8 @@ impl Solution for Day5 {
 
         almanac.maps.push(map.clone());
 
+        almanac.pairs = almanac.set_pairs();
+
         almanac
     }
 
@@ -142,8 +215,7 @@ impl Solution for Day5 {
         almanac.get_lowest_location()
     }
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
-        "".to_string()
+    fn part_2(almanac: &mut Self::ParsedInput) -> String {
+        almanac.get_lowest_location_from_pairs()
     }
 }
-

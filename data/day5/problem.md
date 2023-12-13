@@ -38,36 +38,36 @@ For example:
     seeds: 79 14 55 13
     
     seed-to-soil map:
-    50 98 2
-    52 50 48
+    50 98 2  -> 99
+    52 50 48 -> 97
     
     soil-to-fertilizer map:
-    0 15 37
-    37 52 2
-    39 0 15
+    0 15 37 -> 51
+    37 52 2 -> 53
+    39 0 15 -> 14
     
     fertilizer-to-water map:
-    49 53 8
-    0 11 42
-    42 0 7
-    57 7 4
+    49 53 8 -> 50
+    0 11 42 -> 52
+    42 0 7  -> 6
+    57 7 4  -> 10
     
     water-to-light map:
-    88 18 7
-    18 25 70
+    88 18 7  -> 24
+    18 25 70 -> 94
     
     light-to-temperature map:
-    45 77 23
-    81 45 19
-    68 64 13
+    45 77 23 -> 99
+    81 45 19 -> 63
+    68 64 13 -> 76
     
     temperature-to-humidity map:
-    0 69 1
-    1 0 69
+    0 69 1 -> 69
+    1 0 69 -> 68
     
     humidity-to-location map:
-    60 56 37
-    56 93 4
+    60 56 37 -> 92
+    56 93 4  -> 96
     
 
 The almanac starts by listing which seeds need to be planted: seeds `79`,
@@ -152,4 +152,35 @@ So, the lowest location number in this example is `_35_`.
 
 _What is the lowest location number that corresponds to any of the initial
 seed numbers?_
+
+## \--- Part Two ---
+
+Everyone will starve if you only plant such a small number of seeds. Re-
+reading the almanac, it looks like the `seeds:` line actually describes
+_ranges of seed numbers_.
+
+The values on the initial `seeds:` line come in pairs. Within each pair, the
+first value is the _start_ of the range and the second value is the _length_
+of the range. So, in the first line of the example above:
+
+    
+    
+    seeds: 79 14 55 13
+
+This line describes two ranges of seed numbers to be planted in the garden.
+The first range starts with seed number `79` and contains `14` values: `79`,
+`80`, ..., `91`, `92`. The second range starts with seed number `55` and
+contains `13` values: `55`, `56`, ..., `66`, `67`.
+
+Now, rather than considering four seed numbers, you need to consider a total
+of _27_ seed numbers.
+
+In the above example, the lowest location number can be obtained from seed
+number `82`, which corresponds to soil `84`, fertilizer `84`, water `84`,
+light `77`, temperature `45`, humidity `46`, and _location`46`_. So, the
+lowest location number is `_46_`.
+
+Consider all of the initial seed numbers listed in the ranges on the first
+line of the almanac. _What is the lowest location number that corresponds to
+any of the initial seed numbers?_
 
