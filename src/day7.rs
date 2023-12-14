@@ -102,13 +102,12 @@ impl Game {
         let mut factor = 1;
         let mut total = 0;
         for hand_type in ORDERED_TYPES.iter() {
-            if let Some(vector) = self.types.get(hand_type){
+            if let Some(vector) = self.types.get(hand_type) {
                 for l in vector.iter() {
                     total += l.bid * factor;
                     factor += 1;
                 }
             }
-
         }
 
         total.to_string()
@@ -123,7 +122,6 @@ impl Game {
                 self.types.insert(hand_type.clone(), vec![line.clone()]);
             }
         }
-
     }
 
     fn insert_sorted(&mut self, hand: Line, hand_type: Type) {
@@ -138,7 +136,7 @@ impl Game {
                 CmpHand::EQUAL => {
                     vector.insert(middle, hand);
                     break;
-                },
+                }
                 CmpHand::LOWER => {
                     if middle == left {
                         vector.insert(middle, hand);
@@ -146,7 +144,7 @@ impl Game {
                     }
 
                     right = middle - 1;
-                },
+                }
                 CmpHand::HIGHER => {
                     if middle == right {
                         vector.insert(middle + 1, hand);
@@ -172,13 +170,6 @@ fn get_hand_type(hand: String) -> Type {
         }
     }
 
-    // "High card",
-    // "One pair",
-    // "Two pair",
-    // "Three of a kind",
-    // "Full house",
-    // "Four of a kind",
-    // "Five of a kind",
     match map.len() {
         5 => Type::HighCard,
         4 => Type::OnePair,
