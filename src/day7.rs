@@ -27,8 +27,8 @@ const ORDERED_TYPES: [Type; 7] = [
     Type::FiveOfAKind,
 ];
 
-#[derive(Debug)]
-enum CmpHand {
+#[derive(Debug, PartialEq)]
+enum Compare {
     HIGHER,
     EQUAL,
     LOWER,
@@ -50,39 +50,107 @@ impl Line {
         }
     }
 
-    fn compare(&self, other_hand: String) -> CmpHand {
+    fn compare_hand(&self, other_hand: String, with_jokers: bool) -> Compare {
         let other_hand_chars: Vec<char> = other_hand.chars().collect();
         let self_hand_chars: Vec<char> = self.hand.chars().collect();
         for i in 0..other_hand.len() {
             let ohc = other_hand_chars[i];
             let shc = self_hand_chars[i];
-            if ohc.is_digit(10) && shc.is_digit(10) {
-                if ohc.to_digit(10).unwrap() > shc.to_digit(10).unwrap() {
-                    return CmpHand::LOWER;
-                } else if ohc.to_digit(10).unwrap() < shc.to_digit(10).unwrap() {
-                    return CmpHand::HIGHER;
-                }
-            } else if ohc.is_digit(10) && !shc.is_digit(10) {
-                return CmpHand::HIGHER;
-            } else if !ohc.is_digit(10) && shc.is_digit(10) {
-                return CmpHand::LOWER;
-            } else {
-                let self_index = CARDS.iter().position(|c| *c == shc).unwrap();
-                let other_index = CARDS.iter().position(|c| *c == ohc).unwrap();
-
-                if self_index > other_index {
-                    return CmpHand::HIGHER;
-                } else if self_index < other_index {
-                    return CmpHand::LOWER;
-                }
+            if let Some(compare) = self.compare_chars(shc, ohc, with_jokers) {
+                return compare;
             }
         }
 
-        CmpHand::EQUAL
+        Compare::EQUAL
+    }
+
+    fn compare_chars(
+        &self,
+        self_char: char,
+        other_char: char,
+        with_jokers: bool,
+    ) -> Option<Compare> {
+        if with_jokers {
+            if self_char == 'J' && other_char != 'J' {
+                return Some(Compare::LOWER);
+            } else if self_char != 'J' && other_char == 'J' {
+                return Some(Compare::HIGHER);
+            }
+        }
+
+        if other_char.is_digit(10) && self_char.is_digit(10) {
+            if other_char.to_digit(10).unwrap() > self_char.to_digit(10).unwrap() {
+                return Some(Compare::LOWER);
+            }
+            if other_char.to_digit(10).unwrap() < self_char.to_digit(10).unwrap() {
+                return Some(Compare::HIGHER);
+            }
+        } else if other_char.is_digit(10) && !self_char.is_digit(10) {
+            return Some(Compare::HIGHER);
+        } else if !other_char.is_digit(10) && self_char.is_digit(10) {
+            return Some(Compare::LOWER);
+        } else {
+            let self_index = CARDS.iter().position(|c| *c == self_char).unwrap();
+            let other_index = CARDS.iter().position(|c| *c == other_char).unwrap();
+
+            if self_index > other_index {
+                return Some(Compare::HIGHER);
+            }
+            if self_index < other_index {
+                return Some(Compare::LOWER);
+            }
+        }
+
+        None
+    }
+
+    fn get_hand_type_with_jokers(&mut self) -> Type {
+        let mut map: HashMap<char, usize> = HashMap::new();
+        let jokers = self
+            .hand
+            .chars()
+            .collect::<Vec<char>>()
+            .iter()
+            .fold(0, |cur, c| {
+                if *c == 'J' {
+                    return cur + 1;
+                }
+
+                if map.contains_key(c) {
+                    map.insert(*c, map.get(c).unwrap() + 1);
+                } else {
+                    map.insert(*c, 1);
+                }
+
+                cur
+            });
+
+        let len = map.len();
+        if jokers == 5
+            || jokers == 4
+            || (jokers == 3 && len == 1)
+            || (jokers == 2 && len == 1)
+            || (jokers == 1 && len == 1)
+        {
+            return Type::FiveOfAKind;
+        } else if jokers == 3
+            || (jokers == 2 && len == 2)
+            || (jokers == 1 && len == 2 && map.values().max() == Some(&3))
+        {
+            return Type::FourOfAKind;
+        } else if jokers == 2 || (jokers == 1 && len == 3) {
+            return Type::ThreeOfAKind;
+        } else if jokers == 1 && len == 2 {
+            return Type::FullHouse;
+        } else if jokers == 1 {
+            return Type::OnePair;
+        }
+
+        return self.hand_type.clone();
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Game {
     types: HashMap<Type, Vec<Line>>,
     lines: Vec<Line>,
@@ -96,8 +164,10 @@ impl Game {
         }
     }
 
-    fn get_total_winnings(&mut self) -> String {
-        self.sort_hands();
+    fn get_total_winnings(&mut self, with_jokers: bool) -> String {
+        self.sort_hands(with_jokers);
+
+        // println!("{:#?}", self.types);
 
         let mut factor = 1;
         let mut total = 0;
@@ -113,18 +183,18 @@ impl Game {
         total.to_string()
     }
 
-    fn sort_hands(&mut self) {
+    fn sort_hands(&mut self, with_jokers: bool) {
         for line in self.lines.clone().iter() {
             let hand_type = &line.hand_type;
             if self.types.contains_key(&hand_type) {
-                self.insert_sorted(line.clone(), hand_type.clone());
+                self.insert_sorted(line.clone(), hand_type.clone(), with_jokers);
             } else {
                 self.types.insert(hand_type.clone(), vec![line.clone()]);
             }
         }
     }
 
-    fn insert_sorted(&mut self, hand: Line, hand_type: Type) {
+    fn insert_sorted(&mut self, hand: Line, hand_type: Type, with_jokers: bool) {
         let mut vector: Vec<Line> = self.types.get(&hand_type).unwrap().to_vec();
         let mut left = 0;
         let mut right = vector.len() - 1;
@@ -132,12 +202,12 @@ impl Game {
 
         loop {
             middle = (right + left) / 2;
-            match hand.compare(vector[middle].hand.clone()) {
-                CmpHand::EQUAL => {
+            match hand.compare_hand(vector[middle].hand.clone(), with_jokers) {
+                Compare::EQUAL => {
                     vector.insert(middle, hand);
                     break;
                 }
-                CmpHand::LOWER => {
+                Compare::LOWER => {
                     if middle == left {
                         vector.insert(middle, hand);
                         break;
@@ -145,7 +215,7 @@ impl Game {
 
                     right = middle - 1;
                 }
-                CmpHand::HIGHER => {
+                Compare::HIGHER => {
                     if middle == right {
                         vector.insert(middle + 1, hand);
                         break;
@@ -216,10 +286,17 @@ impl Solution for Day7 {
     }
 
     fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
-        parsed_input.get_total_winnings()
+        let mut game = parsed_input.clone();
+        game.get_total_winnings(false)
     }
 
-    fn part_2(_parsed_input: &mut Self::ParsedInput) -> String {
-        "".to_string()
+    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+        for line in parsed_input.lines.iter_mut() {
+            if line.hand.contains('J') {
+                line.hand_type = line.get_hand_type_with_jokers();
+            }
+        }
+
+        parsed_input.get_total_winnings(true)
     }
 }
