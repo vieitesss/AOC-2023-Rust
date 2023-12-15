@@ -76,7 +76,7 @@ pub fn solve_day(day: u8, input: u8) {
             match input {
                 0 => day8::Day8::solve(include_str!("../data/day8/input.txt")),
                 1 => day8::Day8::solve(include_str!("../data/day8/example1.txt")),
-                // 2 => day8::Day8::solve(include_str!("../data/day8/example1.txt")),
+                2 => day8::Day8::solve(include_str!("../data/day8/example2.txt")),
                 _ => (String::from("Invalid..."), String::from("...input"))
             };
         },
