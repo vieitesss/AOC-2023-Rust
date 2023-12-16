@@ -15,35 +15,53 @@ pub struct Game {
 impl Game {
     // For part 2
     fn get_start_points(&self) -> Vec<String> {
-        // self.nodes
-        //     .iter()
-        //     .filter(|n| n.name.ends_with("A"))
-        //     .map(|n| n.clone())
-        //     .collect()
-        vec![]
+        self.nodes
+            .keys()
+            .filter(|n| n.ends_with("A"))
+            .map(|n| n.clone())
+            .collect()
     }
 
-    fn get_steps(&self, node_name: String, ends_z: bool) -> usize {
+    fn get_steps(&self, node_name: &str, ends_z: bool) -> usize {
         let mut steps = 0;
+        let mut current_node = node_name;
 
-        let mut current_node = node_name.clone();
-        while !self.is_final_node(current_node.clone(), ends_z) {
-            current_node = self.nodes.get(&current_node).unwrap()
-                [self.instructions[steps % self.instructions.len()]]
-            .clone();
+        while !self.is_final_node(current_node, ends_z) {
+            current_node = &self.nodes.get(current_node).unwrap()
+                [self.instructions[steps % self.instructions.len()]];
             steps += 1;
         }
 
         steps
     }
 
-    fn is_final_node(&self, node_name: String, ends_z: bool) -> bool {
+    fn is_final_node(&self, node_name: &str, ends_z: bool) -> bool {
         if ends_z {
             return node_name.ends_with("Z");
         }
 
         node_name == "ZZZ"
     }
+}
+
+fn gcd(a: usize, b: usize) -> usize {
+    if b == 0 {
+        return a;
+    };
+
+    return gcd(b, a % b);
+}
+
+fn lcm(a: usize, b: usize) -> usize {
+    return a * b / gcd(a, b);
+}
+
+fn get_lcm(numbers: &[usize]) -> usize {
+    let mut total = numbers[0];
+    for i in 1..numbers.len() {
+        total = lcm(total, numbers[i]);
+    }
+    total
 }
 
 impl Solution for Day8 {
@@ -72,11 +90,16 @@ impl Solution for Day8 {
     }
 
     fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
-        // println!("{:#?}", parsed_input);
-        parsed_input.get_steps("AAA".to_string(), false).to_string()
+        parsed_input.get_steps("AAA", false).to_string()
     }
 
-    fn part_2(_parsed_input: &mut Self::ParsedInput) -> String {
-        "".to_string()
+    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+        let start_points = parsed_input.get_start_points();
+        let all_steps: Vec<usize> = start_points
+            .iter()
+            .map(|p| parsed_input.get_steps(p, true))
+            .collect();
+
+        get_lcm(&all_steps).to_string()
     }
 }
