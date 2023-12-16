@@ -57,11 +57,7 @@ fn lcm(a: usize, b: usize) -> usize {
 }
 
 fn get_lcm(numbers: &[usize]) -> usize {
-    let mut total = numbers[0];
-    for i in 1..numbers.len() {
-        total = lcm(total, numbers[i]);
-    }
-    total
+    numbers.to_vec().iter().fold(1, |a, b| lcm(a, *b))
 }
 
 impl Solution for Day8 {
