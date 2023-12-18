@@ -7,6 +7,7 @@ pub mod day6;
 pub mod day7;
 pub mod day8;
 pub mod day9;
+pub mod day10;
 
 
 pub trait Solution {
@@ -85,7 +86,15 @@ pub fn solve_day(day: u8, input: u8) {
             match input {
                 0 => day9::Day9::solve(include_str!("../data/day9/input.txt")),
                 1 => day9::Day9::solve(include_str!("../data/day9/example1.txt")),
-                // 2 => day9::Day9::solve(include_str!("../data/day9/example2.txt")),
+                2 => day9::Day9::solve(include_str!("../data/day9/example1.txt")),
+                _ => (String::from("Invalid..."), String::from("...input"))
+            };
+        },
+        10 => {
+            match input {
+                0 => day10::Day10::solve(include_str!("../data/day10/input.txt")),
+                1 => day10::Day10::solve(include_str!("../data/day10/example1.txt")),
+                2 => day10::Day10::solve(include_str!("../data/day10/example1.txt")),
                 _ => (String::from("Invalid..."), String::from("...input"))
             };
         },
