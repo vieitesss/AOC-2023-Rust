@@ -4,27 +4,33 @@ use crate::Solution;
 pub struct History(Vec<i32>);
 
 impl History {
-    fn next_value(&self) -> Option<i32> {
+    fn extrapolate(&self, backwards: bool) -> Option<i32> {
         let values = self.get_next_values(&self.0);
 
-        if let Some(v) = self.rec(&values) {
-            return Some(v + self.0.last().unwrap())
+        if let Some(v) = self.rec(&values, backwards) {
+            if backwards {
+                return Some(self.0.first().unwrap() - v);
+            }
+            return Some(v + self.0.last().unwrap());
         }
 
         None
     }
 
-    fn rec(&self, values: &[i32]) -> Option<i32> {
+    fn rec(&self, values: &[i32], backwards: bool) -> Option<i32> {
         if values.len() == 1 && values[0] != 0 {
-            return None
+            return None;
         }
 
         if values.iter().all(|v| *v == values[0]) && values.len() > 1 {
             return Some(values[0]);
         }
 
-        if let Some(v) = self.rec(&self.get_next_values(&values)) {
-            return Some(values.last().unwrap() + v)
+        if let Some(v) = self.rec(&self.get_next_values(&values), backwards) {
+            if backwards {
+                return Some(values.first().unwrap() - v);
+            }
+            return Some(values.last().unwrap() + v);
         }
 
         None
@@ -62,7 +68,7 @@ impl Solution for Day9 {
         parsed_input
             .iter()
             .fold(0, |cur, h| {
-                if let Some(r) = h.next_value() {
+                if let Some(r) = h.extrapolate(false) {
                     cur + r
                 } else {
                     cur + h.0.last().unwrap()
@@ -71,7 +77,16 @@ impl Solution for Day9 {
             .to_string()
     }
 
-    fn part_2(_parsed_input: &mut Self::ParsedInput) -> String {
-        "".to_string()
+    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+        parsed_input
+            .iter()
+            .fold(0, |cur, h| {
+                if let Some(r) = h.extrapolate(true) {
+                    cur + r
+                } else {
+                    cur + h.0.first().unwrap()
+                }
+            })
+            .to_string()
     }
 }
