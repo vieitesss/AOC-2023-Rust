@@ -53,7 +53,7 @@ instead look like this:
     
     
     .....
-    . _S_ -7.
+    .S-7.
     .|.|.
     .L-J.
     .....
@@ -129,7 +129,7 @@ like this:
     .....
     .012.
     .1.3.
-    .23 _4_.
+    .234.
     .....
     
 
@@ -152,7 +152,7 @@ Here are the distances for each tile on that loop:
     
     ..45.
     .236.
-    01.7 _8_
+    01.78
     14567
     23...
     
