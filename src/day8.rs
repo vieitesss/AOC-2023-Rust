@@ -85,11 +85,11 @@ impl Solution for Day8 {
         }
     }
 
-    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_1(parsed_input: &Self::ParsedInput) -> String {
         parsed_input.get_steps("AAA", false).to_string()
     }
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_2(parsed_input: Self::ParsedInput) -> String {
         let start_points = parsed_input.get_start_points();
         let all_steps: Vec<usize> = start_points
             .iter()

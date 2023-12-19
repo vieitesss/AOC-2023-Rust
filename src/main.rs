@@ -1,3 +1,5 @@
+// #![feature(lazy_cell)]
+
 use std::env;
 
 use aoc23::solve_day;

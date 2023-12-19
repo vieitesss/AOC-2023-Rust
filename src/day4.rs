@@ -82,11 +82,11 @@ impl Solution for Day4 {
         Table(cards)
     }
 
-    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_1(parsed_input: &Self::ParsedInput) -> String {
         parsed_input.get_all_points()
     }
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_2(parsed_input: Self::ParsedInput) -> String {
         parsed_input.get_all_instances()
     }
 }

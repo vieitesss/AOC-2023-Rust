@@ -211,11 +211,11 @@ impl Solution for Day5 {
         almanac
     }
 
-    fn part_1(almanac: &mut Self::ParsedInput) -> String {
+    fn part_1(almanac: &Self::ParsedInput) -> String {
         almanac.get_lowest_location()
     }
 
-    fn part_2(almanac: &mut Self::ParsedInput) -> String {
+    fn part_2(almanac: Self::ParsedInput) -> String {
         almanac.get_lowest_location_from_pairs()
     }
 }

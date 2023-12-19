@@ -229,11 +229,11 @@ impl Solution for Day3 {
         Grid(data)
     }
 
-    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_1(parsed_input: &Self::ParsedInput) -> String {
         format!("{}", parsed_input.get_part_numbers().iter().sum::<usize>())
     }
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_2(parsed_input: Self::ParsedInput) -> String {
         format!("{}", parsed_input.get_ratios().iter().sum::<usize>())
     }
 }

@@ -64,7 +64,7 @@ impl Solution for Day9 {
             .collect::<Vec<History>>()
     }
 
-    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_1(parsed_input: &Self::ParsedInput) -> String {
         parsed_input
             .iter()
             .fold(0, |cur, h| {
@@ -77,7 +77,7 @@ impl Solution for Day9 {
             .to_string()
     }
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_2(parsed_input: Self::ParsedInput) -> String {
         parsed_input
             .iter()
             .fold(0, |cur, h| {

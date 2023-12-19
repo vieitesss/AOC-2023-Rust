@@ -86,11 +86,11 @@ impl Solution for Day6 {
         Paper(races)
     }
 
-    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_1(parsed_input: &Self::ParsedInput) -> String {
         parsed_input.ways_to_beat_record()
     }
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_2(parsed_input: Self::ParsedInput) -> String {
         parsed_input.ways_to_beat_race()
     }
 }

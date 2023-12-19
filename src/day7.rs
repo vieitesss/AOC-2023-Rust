@@ -285,18 +285,19 @@ impl Solution for Day7 {
         Game::new(lines)
     }
 
-    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {
+    fn part_1(parsed_input: &Self::ParsedInput) -> String {
         let mut game = parsed_input.clone();
         game.get_total_winnings(false)
     }
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {
-        for line in parsed_input.lines.iter_mut() {
+    fn part_2(parsed_input: Self::ParsedInput) -> String {
+        let mut input = parsed_input;
+        for line in input.lines.iter_mut() {
             if line.hand.contains('J') {
                 line.hand_type = line.get_hand_type_with_jokers();
             }
         }
 
-        parsed_input.get_total_winnings(true)
+        input.get_total_winnings(true)
     }
 }
