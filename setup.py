@@ -105,11 +105,11 @@ impl Solution for Day{number} {{
         todo!()
     }}
 
-    fn part_1(parsed_input: &mut Self::ParsedInput) -> String {{
+    fn part_1(parsed_input: &Self::ParsedInput) -> String {{
         todo!()
     }}
 
-    fn part_2(parsed_input: &mut Self::ParsedInput) -> String {{
+    fn part_2(parsed_input: Self::ParsedInput) -> String {{
         todo!()
     }}
 }}"""
