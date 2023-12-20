@@ -44,15 +44,17 @@ def download_problem(number: int):
     if articles == None:
         raise Error(f"Could not parse https://adventofcode.com/2023/day/{number}.")
 
-    for index, article in enumerate(articles):
-        with open(f"data/day{number}/example{index + 1}.txt", "w") as f:
-            code = article.find("pre").find("code")
-            f.write(delete_tags(str(code)))
-
     with open(f"data/day{number}/problem.md", "w") as f:
         for article in articles:
             f.write(html2text(str(article)))
 
+    for index, article in enumerate(articles):
+        try:
+            code = article.find("pre").find("code")
+            with open(f"data/day{number}/example{index + 1}.txt", "w") as f:
+                f.write(delete_tags(str(code)))
+        except AttributeError:
+            raise AttributeError(f"There is no atributte 'pre' in the article.")
 
 def delete_tags(text: str) -> str:
     """Deletes all html tags from the given text."""
@@ -133,7 +135,7 @@ def main(
         setup_structure(number)
         logging.info(f"Structure for day {number} set up.")
     except FileExistsError as e:
-        logging.error(e)
+        logging.warning(e)
         update = True
 
     try:
@@ -142,7 +144,9 @@ def main(
         logging.info(f"Problem for day {number} downloaded.")
     except Error as e:
         logging.error(e)
-        sys.exit(1)
+        exit(1)
+    except AttributeError as e:
+        logging.warning(e)
 
     if not update:
         try:
