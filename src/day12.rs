@@ -1,7 +1,4 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
-use std::fmt::Display;
+use std::collections::HashMap;
 
 use crate::Solution;
 
@@ -13,79 +10,56 @@ struct Record {
     groups: Vec<usize>,
 }
 
-impl Display for Record {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?} {:?}", self.condition, self.groups)
-    }
-}
+type Memo = HashMap<(String, Vec<usize>), usize>;
 
 impl Record {
-    fn find_arrangements(&self, condi: usize, gri: usize, count: usize) -> usize {
-        let cond = self.condition.chars().nth(condi);
+    fn find_arrangements(&self, cond: &str, groups: &[usize], memo: &mut Memo) -> usize {
+        if let Some(memoized) = memo.get(&(cond.to_string(), groups.to_vec())) {
+            return *memoized;
+        }
 
-        // Ya he colocado todos los grupos teniendo en cuenta las condiciones, pero no he terminado
-        // de revisar toda la linea. Igualmente es una opcion valida.
-        if gri == self.groups.len() && !self.condition.split_at(condi).1.chars().any(|c| c == '#') {
-            //println!("correct");
+        if groups.is_empty() && (cond.is_empty() || !cond.contains('#')) {
             return 1;
-        } else if gri == self.groups.len() {
-            //println!("false");
+        }
+
+        let space_needed = groups.iter().sum::<usize>() + groups.len() - 1;
+
+        if cond.len() < space_needed {
             return 0;
         }
 
-        let n = self.groups[gri]; // cantidad de '#' seguidas que debe haber
-
-        //println!("{condi}->{cond:?} {gri}->{n} {count}");
-
-        // He terminado de mirar la linea de condiciones y el ultimo caracter conincide con el
-        // final del ultimo grupo, por lo tanto es una opcion valida.
-        if cond.is_none() && n == count && gri == self.groups.len() - 1 {
-            //println!("correct");
-            return 1;
-        } else if cond.is_none() {
-            // He terminado de mirar la linea pero no he terminado de
-            // colocar todos los grupos
-            //println!("false");
-            return 0;
-        }
-
-        match cond.unwrap() {
+        let current = cond.chars().next().unwrap();
+        let next_slice = cond.split_at(1).1;
+        let result = match current {
+            '.' => self.find_arrangements(next_slice, groups, memo),
             '?' => {
-                if n == count {
-                    // he terminado el grupo anterior y puedo poner un punto
-                    return self.find_arrangements(condi + 1, gri + 1, 0);
-                } else if count > 0 {
-                    // puedo seguir poniendo '#', no he terminado el grupo
-                    return self.find_arrangements(condi + 1, gri, count + 1);
-                }
-                // count == 0, puedo poner tanto un '#' como un '.'
-                return self.find_arrangements(condi + 1, gri, count + 1)
-                    + self.find_arrangements(condi + 1, gri, count);
+                self.find_arrangements(next_slice, groups, memo)
+                    + self.found_hash(cond, groups, memo)
             }
-            '.' => {
-                if n == count {
-                    // ya se ha colocado el grupo
-                    return self.find_arrangements(condi + 1, gri + 1, 0);
-                } else if count > 0 {
-                    //println!("false");
-                    return 0;
-                } else {
-                    // count == 0
-                    return self.find_arrangements(condi + 1, gri, count);
-                }
+            '#' => self.found_hash(cond, groups, memo),
+            _ => panic!("Not a symbol: {current}"),
+        };
+
+        memo.insert((cond.to_string(), groups.to_vec()), result);
+        result
+    }
+
+    fn found_hash(&self, cond: &str, groups: &[usize], memo: &mut Memo) -> usize {
+        if let Some(ch) = cond.chars().nth(groups[0]) {
+            if ch == '#' {
+                return 0;
             }
-            '#' => {
-                if n == count {
-                    // no deberia haber otro '#'
-                    //println!("false");
-                    return 0;
-                } else {
-                    // count >= 0
-                    return self.find_arrangements(condi + 1, gri, count + 1);
-                }
-            }
-            _ => panic!("Not a symbol"),
         }
+
+        if cond.split_at(groups[0]).0.contains('.') {
+            return 0;
+        }
+
+        if cond.len() == groups[0] {
+            return 1;
+        }
+
+        self.find_arrangements(cond.split_at(groups[0] + 1).1, &groups[1..], memo)
     }
 }
 
@@ -94,9 +68,32 @@ pub struct Records(Vec<Record>);
 
 impl Records {
     fn sum_of_arrangements(&self) -> usize {
-        self.0
-            .iter()
-            .fold(0, |cur, r| cur + r.find_arrangements(0, 0, 0))
+        self.0.iter().fold(0, |cur, r| {
+            cur + r.find_arrangements(&r.condition, &r.groups, &mut Memo::new())
+        })
+    }
+
+    fn extend(&self, record: &Record) -> Record {
+        let mut new_cond = record.condition.clone();
+        let mut new_grps = record.groups.clone();
+        for _ in 0..4 {
+            new_cond = format!("{}?{}", new_cond, record.condition);
+            record.groups.iter().for_each(|g| new_grps.push(*g));
+        }
+        Record {
+            condition: new_cond,
+            groups: new_grps,
+        }
+    }
+
+    fn sum_by_five(&self) -> usize {
+        let mut result = 0;
+        for r in self.0.iter() {
+            let new_r = self.extend(&r);
+            result += new_r.find_arrangements(&new_r.condition, &new_r.groups, &mut Memo::new());
+        }
+
+        result
     }
 }
 
@@ -127,7 +124,6 @@ impl Solution for Day12 {
     }
 
     fn part_2(parsed_input: Self::ParsedInput) -> String {
-        "".to_string()
+        parsed_input.sum_by_five().to_string()
     }
 }
-
