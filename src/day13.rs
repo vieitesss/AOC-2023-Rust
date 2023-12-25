@@ -18,31 +18,39 @@ enum REFLECTION {
 }
 
 impl Matrix {
-    fn is_reflection(&self, ref_type: REFLECTION, mut start: usize, mut end: usize) -> bool {
-        let vector = if ref_type == REFLECTION::ROWS {
+    fn is_reflection(&self, refl: &REFLECTION, start: usize, end: usize, offset: usize) -> bool {
+        let mut current_start = start - offset;
+        let mut current_end = end + offset;
+        let vector = if *refl == REFLECTION::ROWS {
             self.rows.clone()
         } else {
             self.columns.clone()
         };
 
-        while start < end {
-            // println!("{} - {}", vector[start], vector[end]);
-            if vector[start] != vector[end] {
+        while current_start < current_end {
+            if current_start == start && current_end == end {
+                current_start += 1;
+                current_end -= 1;
+                continue;
+            }
+
+            if vector[current_start] != vector[current_end] {
                 return false;
             }
-            start += 1;
-            end -= 1;
+
+            current_start += 1;
+            current_end -= 1;
         }
 
-        if start == end {
+        if current_start == current_end {
             return false;
         }
 
         true
     }
 
-    fn get_line_of_reflection(&self, ref_type: REFLECTION) -> Option<usize> {
-        let vector = if ref_type == REFLECTION::ROWS {
+    fn get_line_of_reflection(&self, ref_type: &REFLECTION) -> Option<usize> {
+        let vector = if *ref_type == REFLECTION::ROWS {
             self.rows.clone()
         } else {
             self.columns.clone()
@@ -52,18 +60,63 @@ impl Matrix {
         let last = vector.last()?;
 
         for index in 0..vector.iter().len() {
-            if *first == vector[index] && index != 0 && self.is_reflection(ref_type, 0, index) {
+            if *first == vector[index] && index != 0 && self.is_reflection(ref_type, 0, index, 0) {
                 return Some((index + 1) / 2);
             }
             if *last == vector[index]
                 && index != vector.len() - 1
-                && self.is_reflection(ref_type, index, vector.len() - 1)
+                && self.is_reflection(ref_type, index, vector.len() - 1, 0)
             {
                 return Some((index + vector.len()) / 2);
             }
         }
 
         None
+    }
+
+    fn reflection_with_smudge(&self, ref_type: &REFLECTION) -> Option<usize> {
+        let vector = if *ref_type == REFLECTION::ROWS {
+            self.rows.clone()
+        } else {
+            self.columns.clone()
+        };
+
+        let vector_len = vector.len();
+
+        for first in 0..vector_len - 1 {
+            for second in first + 1..vector_len {
+                if vector[first] != vector[second]
+                    && self.is_posible_smudge(&vector[first], &vector[second])
+                {
+                    let offset = if first < vector_len - second {
+                        first
+                    } else {
+                        vector_len - second - 1
+                    };
+
+                    if self.is_reflection(ref_type, first, second, offset) {
+                        return Some((first - offset + second + offset + 1) / 2);
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    fn is_posible_smudge(&self, first: &str, second: &str) -> bool {
+        let mut count = 0;
+        for index in 0..first.len() {
+            if first.chars().nth(index).unwrap() != second.chars().nth(index).unwrap() {
+                count += 1;
+            }
+
+            if count > 1 {
+                return false;
+            }
+        }
+
+        true
     }
 }
 
@@ -73,11 +126,25 @@ pub struct Data(Vec<Matrix>);
 impl Data {
     fn summarize(&self) -> usize {
         self.0.iter().fold(0, |cur, matrix| {
-            if let Some(index) = matrix.get_line_of_reflection(REFLECTION::ROWS) {
+            if let Some(index) = matrix.get_line_of_reflection(&REFLECTION::ROWS) {
                 return cur + index * 100;
             }
 
-            if let Some(index) = matrix.get_line_of_reflection(REFLECTION::COLUMNS) {
+            if let Some(index) = matrix.get_line_of_reflection(&REFLECTION::COLUMNS) {
+                return cur + index;
+            }
+
+            cur
+        })
+    }
+
+    fn summarize_with_smudge(&self) -> usize {
+        self.0.iter().fold(0, |cur, matrix| {
+            if let Some(index) = matrix.reflection_with_smudge(&REFLECTION::ROWS) {
+                return cur + index * 100;
+            }
+
+            if let Some(index) = matrix.reflection_with_smudge(&REFLECTION::COLUMNS) {
                 return cur + index;
             }
 
@@ -123,6 +190,6 @@ impl Solution for Day13 {
     }
 
     fn part_2(parsed_input: Self::ParsedInput) -> String {
-        "".to_string()
+        parsed_input.summarize_with_smudge().to_string()
     }
 }
