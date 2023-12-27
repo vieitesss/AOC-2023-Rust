@@ -8,6 +8,7 @@ pub mod day12;
 pub mod day13;
 pub mod day14;
 pub mod day15;
+pub mod day16;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -153,6 +154,14 @@ pub fn solve_day(day: u8, input: u8) {
                 0 => day15::Day15::solve(include_str!("../data/day15/input.txt")),
                 1 => day15::Day15::solve(include_str!("../data/day15/example1.txt")),
                 // 2 => day15::Day15::solve(include_str!("../data/day15/example2.txt")),
+                _ => (String::from("Invalid..."), String::from("...input")),
+            };
+        }
+        16 => {
+            match input {
+                0 => day16::Day16::solve(include_str!("../data/day16/input.txt")),
+                1 => day16::Day16::solve(include_str!("../data/day16/example1.txt")),
+                // 2 => day16::Day16::solve(include_str!("../data/day16/example2.txt")),
                 _ => (String::from("Invalid..."), String::from("...input")),
             };
         }
