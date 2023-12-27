@@ -67,6 +67,14 @@ impl Matrix {
             || point.1 > (self.0[0].len() - 1) as isize;
     }
 
+    fn energized_tiles_with_config(&self, dir: DIR, point: &(usize, usize)) -> usize {
+        self.energized_tiles(
+            dir,
+            &(point.0 as isize, point.1 as isize),
+            &mut HashMap::new(),
+        )
+    }
+
     fn energized_tiles(&self, dir: DIR, point: &(isize, isize), memo: &mut Memo) -> usize {
         if self.is_out_of_bounds(point) {
             return 0;
@@ -136,8 +144,53 @@ impl Solution for Day16 {
             .to_string()
     }
 
-    fn part_2(_parsed_input: Self::ParsedInput) -> String {
-        "".to_string()
+    fn part_2(parsed_input: Self::ParsedInput) -> String {
+        parsed_input
+            .0
+            .iter()
+            .enumerate()
+            .map(|(x, line)| {
+                line.iter()
+                    .enumerate()
+                    .map(|(y, _)| {
+                        if x == 0 && y == 0 {
+                            let res1 =
+                                parsed_input.energized_tiles_with_config(DIR::RIGHT, &(x, y));
+                            let res2 = parsed_input.energized_tiles_with_config(DIR::DOWN, &(x, y));
+                            return if res1 > res2 { res1 } else { res2 };
+                        } else if x == 0 && y == line.len() - 1 {
+                            let res1 = parsed_input.energized_tiles_with_config(DIR::LEFT, &(x, y));
+                            let res2 = parsed_input.energized_tiles_with_config(DIR::DOWN, &(x, y));
+                            return if res1 > res2 { res1 } else { res2 };
+                        } else if x == 0 {
+                            return parsed_input.energized_tiles_with_config(DIR::DOWN, &(x, y));
+                        } else if y == 0 && x == parsed_input.0.len() - 1 {
+                            let res1 =
+                                parsed_input.energized_tiles_with_config(DIR::RIGHT, &(x, y));
+                            let res2 = parsed_input.energized_tiles_with_config(DIR::UP, &(x, y));
+                            return if res1 > res2 { res1 } else { res2 };
+                        } else if y == 0 {
+                            return parsed_input.energized_tiles_with_config(DIR::RIGHT, &(x, y));
+                        } else if y == line.len() - 1 && x == parsed_input.0.len() - 1 {
+                            let res1 = parsed_input.energized_tiles_with_config(DIR::LEFT, &(x, y));
+                            let res2 = parsed_input.energized_tiles_with_config(DIR::UP, &(x, y));
+                            return if res1 > res2 { res1 } else { res2 };
+                        } else if y == line.len() - 1 {
+                            return parsed_input.energized_tiles_with_config(DIR::LEFT, &(x, y));
+                        } else if x == parsed_input.0.len() - 1 {
+                            return parsed_input.energized_tiles_with_config(DIR::UP, &(x, y));
+                        }
+
+                        0
+                    })
+                    .collect::<Vec<usize>>()
+                    .iter()
+                    .fold(0, |acc, i| if *i > acc { *i } else { acc })
+            })
+            .collect::<Vec<_>>()
+            .iter()
+            .fold(0, |acc, i| if *i > acc { *i } else { acc })
+            .to_string()
     }
 }
 
