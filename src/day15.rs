@@ -4,6 +4,13 @@ pub struct Day15;
 
 #[derive(Debug)]
 struct Step(String);
+#[derive(Debug)]
+struct Step {
+    def: String,
+    label: String,
+    operation: OP,
+    value: Option<usize>,
+}
 
 impl Step {
     fn get_value(&self) -> usize {
@@ -34,7 +41,24 @@ impl Solution for Day15 {
         Steps(
             input_lines
                 .split(",")
-                .map(|step| Step(step.trim().to_string()))
+                .map(|step| {
+                    if step.contains("=") {
+                        let splited: Vec<&str> = step.split("=").collect();
+                        return Step {
+                            def: step.trim().to_string(),
+                            label: splited[0].to_string(),
+                            operation: OP::ADD,
+                            value: Some(splited[1].parse().unwrap()),
+                        };
+                    }
+
+                    Step {
+                        def: step.trim().to_string(),
+                        label: step.split_at(step.len() - 1).0.to_string(),
+                        operation: OP::REMOVE,
+                        value: None,
+                    }
+                })
                 .collect(),
         )
     }
