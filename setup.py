@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from shutil import Error
 import sys
 import os
 import re
 import logging
+from rich.logging import RichHandler
 from requests import Session
 from bs4 import BeautifulSoup
 from html2text import html2text
@@ -16,33 +16,44 @@ app = typer.Typer()
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
+    format=f"%(message)s",
+    handlers=[
+        RichHandler(
+            show_path=False,
+            rich_tracebacks=True,
+            markup=True,
+            show_time=False,
+        )
+    ],
 )
+
+log = logging.getLogger("rich")
 
 s = Session()
 try:
     s.cookies.set("session", os.environ["AOC_SESSION"])
 except KeyError:
-    logging.critical("Please set the AOC_SESSION environment variable")
+    log.critical("Please set the AOC_SESSION environment variable")
     sys.exit(1)
 
 
-def download_problem(number: int):
+def download_problem(number: int) -> None:
     """Downloads the problem for the given day and writes it to /data/day{number}/problem.md
     and each example to /data/day{number}/example{index}.txt"""
     url = f"https://adventofcode.com/2023/day/{number}"
     r = s.get(url)
 
     if r.status_code != 200:
-        raise Error(f"Could not download https://adventofcode.com/2023/day/{number}.")
+        raise Exception(
+            f"Could not download https://adventofcode.com/2023/day/{number}."
+        )
 
     soup = BeautifulSoup(r.text, "html.parser")
 
     articles = soup.find_all("article")
 
     if articles == None:
-        raise Error(f"Could not parse https://adventofcode.com/2023/day/{number}.")
+        raise Exception(f"Could not parse https://adventofcode.com/2023/day/{number}.")
 
     with open(f"data/day{number}/problem.md", "w") as f:
         for article in articles:
@@ -56,6 +67,7 @@ def download_problem(number: int):
         except AttributeError:
             raise AttributeError(f"There is no atributte 'pre' in the article.")
 
+
 def delete_tags(text: str) -> str:
     """Deletes all html tags from the given text."""
     clean = re.compile("<.*?>")
@@ -64,21 +76,23 @@ def delete_tags(text: str) -> str:
     return cleantext
 
 
-def download_input(number: int):
+def download_input(number: int) -> None:
     """Downloads the input for the given day and writes it to /data/day{number}/input.txt"""
     # get html
     url = f"https://adventofcode.com/2023/day/{number}/input"
     r = s.get(url)
 
     if r.status_code != 200:
-        raise Error(f"Could not download https://adventofcode.com/2023/day/{number}.")
+        raise Exception(
+            f"Could not download https://adventofcode.com/2023/day/{number}."
+        )
 
     # write text to file /data/day{number}/input.txt
     with open(f"data/day{number}/input.txt", "w") as f:
         f.write(r.text)
 
 
-def setup_structure(number: int):
+def setup_structure(number: int) -> None:
     """Creates the following structure:
     ./data/day{number}/
     """
@@ -89,7 +103,7 @@ def setup_structure(number: int):
         raise FileExistsError(f"Data path for day {number} already exists.")
 
 
-def setup_program(number: int):
+def setup_program(number: int) -> None:
     """Creates the following structure:
     ./src/day{number}.rs
     """
@@ -131,34 +145,32 @@ def main(
     """Sets up the structure for the given day and downloads the problem and input."""
     update = False
     try:
-        logging.info(f"Setting up structure for day {number}...")
+        log.info(f"Setting up structure for day {number}...")
         setup_structure(number)
-        logging.info(f"Structure for day {number} set up.")
     except FileExistsError as e:
-        logging.warning(e)
+        log.warning(e)
         update = True
 
     try:
-        logging.info(f"Downloading problem for day {number}...")
+        log.info(f"Downloading problem for day {number}...")
         download_problem(number)
-        logging.info(f"Problem for day {number} downloaded.")
-    except Error as e:
-        logging.error(e)
-        exit(1)
     except AttributeError as e:
-        logging.warning(e)
+        log.warning(e)
+    except Exception as e:
+        log.error(e, exc_info=True)
+        exit(1)
 
     if not update:
         try:
-            logging.info(f"Downloading input for day {number}...")
+            log.info(f"Downloading input for day {number}...")
             download_input(number)
-            logging.info(f"Input for day {number} downloaded.")
-            logging.debug(f"Setting up program for day {number}")
+            log.info(f"Setting up program for day {number}")
             setup_program(number)
-            logging.info(f"Program for day {number} set up.")
-        except Error as e:
-            logging.error(e)
+        except Exception as e:
+            log.error(e, exc_info=True)
             sys.exit(1)
+
+    log.info(f"Day {number} {'updated' if update else 'set up'} successfuly.")
 
 
 if __name__ == "__main__":
