@@ -155,7 +155,7 @@ def main(
     except AttributeError as e:
         log.warning(e)
     except Exception as e:
-        log.error(e, exc_info=True)
+        log.critical(e, exc_info=True)
         exit(1)
 
     if not update:
@@ -165,7 +165,7 @@ def main(
             log.info(f"Setting up program for day {number}")
             setup_program(number)
         except Exception as e:
-            log.error(e, exc_info=True)
+            log.critical(e, exc_info=True)
             sys.exit(1)
 
     log.info(f"Day {number} {'updated' if update else 'set up'} successfuly.")
