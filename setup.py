@@ -36,24 +36,24 @@ except KeyError:
     log.critical("Please set the AOC_SESSION environment variable")
     sys.exit(1)
 
+url = f"https://adventofcode.com/2023/day"
+
 
 def download_problem(number: int) -> None:
     """Downloads the problem for the given day and writes it to /data/day{number}/problem.md
     and each example to /data/day{number}/example{index}.txt"""
-    url = f"https://adventofcode.com/2023/day/{number}"
-    r = s.get(url)
+    url_day = f"{url}/{number}"
+    r = s.get(url_day)
 
     if r.status_code != 200:
-        raise Exception(
-            f"Could not download https://adventofcode.com/2023/day/{number}."
-        )
+        raise Exception(f"Could not download {url_day}.")
 
     soup = BeautifulSoup(r.text, "html.parser")
 
     articles = soup.find_all("article")
 
     if articles == None:
-        raise Exception(f"Could not parse https://adventofcode.com/2023/day/{number}.")
+        raise Exception(f"Could not parse {url_day}.")
 
     with open(f"data/day{number}/problem.md", "w") as f:
         for article in articles:
@@ -79,13 +79,11 @@ def delete_tags(text: str) -> str:
 def download_input(number: int) -> None:
     """Downloads the input for the given day and writes it to /data/day{number}/input.txt"""
     # get html
-    url = f"https://adventofcode.com/2023/day/{number}/input"
-    r = s.get(url)
+    url_input = f"{url}/{number}/input"
+    r = s.get(url_input)
 
     if r.status_code != 200:
-        raise Exception(
-            f"Could not download https://adventofcode.com/2023/day/{number}."
-        )
+        raise Exception(f"Could not download {url_input}.")
 
     # write text to file /data/day{number}/input.txt
     with open(f"data/day{number}/input.txt", "w") as f:
