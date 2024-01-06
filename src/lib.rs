@@ -1,23 +1,28 @@
 #![feature(lazy_cell)]
 #![feature(extract_if)]
 
-pub mod day1;
-pub mod day10;
-pub mod day11;
-pub mod day12;
-pub mod day13;
-pub mod day14;
-pub mod day15;
-pub mod day16;
-pub mod day17;
-pub mod day2;
-pub mod day3;
-pub mod day4;
-pub mod day5;
-pub mod day6;
-pub mod day7;
-pub mod day8;
-pub mod day9;
+pub mod aoc2023;
+
+use std::fs::File;
+use std::io::Read;
+
+// use aoc2023::day1;
+// use aoc2023::day2;
+use aoc2023::day10;
+use aoc2023::day11;
+use aoc2023::day12;
+use aoc2023::day13;
+use aoc2023::day14;
+use aoc2023::day15;
+use aoc2023::day16;
+use aoc2023::day17;
+use aoc2023::day3;
+use aoc2023::day4;
+use aoc2023::day5;
+use aoc2023::day6;
+use aoc2023::day7;
+use aoc2023::day8;
+use aoc2023::day9;
 
 pub trait Solution {
     type ParsedInput;
