@@ -71,126 +71,40 @@ pub trait Solution {
     }
 }
 
-pub fn solve_day(day: u8, input: u8) {
+pub fn solve_day(year: u16, day: u8, input: u8) -> std::io::Result<()> {
+    let mut input_str = String::new();
+
+    match input {
+        0 => File::open(format!("data/aoc{}/day{}/input.txt", year, day).as_str())?
+            .read_to_string(&mut input_str)?,
+        1 => File::open(format!("data/aoc{}/day{}/example1.txt", year, day).as_str())?
+            .read_to_string(&mut input_str)?,
+        2 => File::open(format!("data/aoc{}/day{}/example2.txt", year, day).as_str())?
+            .read_to_string(&mut input_str)?,
+        _ => panic!("Invalid input"),
+    };
+
     match day {
-        3 => {
-            match input {
-                0 => day3::Day3::solve(include_str!("../data/day3/input.txt")),
-                1 => day3::Day3::solve(include_str!("../data/day3/example1.txt")),
-                2 => day3::Day3::solve(include_str!("../data/day3/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        4 => {
-            match input {
-                0 => day4::Day4::solve(include_str!("../data/day4/input.txt")),
-                1 => day4::Day4::solve(include_str!("../data/day4/example1.txt")),
-                2 => day4::Day4::solve(include_str!("../data/day4/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        5 => {
-            match input {
-                0 => day5::Day5::solve(include_str!("../data/day5/input.txt")),
-                1 => day5::Day5::solve(include_str!("../data/day5/example1.txt")),
-                2 => day5::Day5::solve(include_str!("../data/day5/example1.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        6 => {
-            match input {
-                0 => day6::Day6::solve(include_str!("../data/day6/input.txt")),
-                1 => day6::Day6::solve(include_str!("../data/day6/example1.txt")),
-                2 => day6::Day6::solve(include_str!("../data/day6/example1.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        7 => {
-            match input {
-                0 => day7::Day7::solve(include_str!("../data/day7/input.txt")),
-                1 => day7::Day7::solve(include_str!("../data/day7/example1.txt")),
-                2 => day7::Day7::solve(include_str!("../data/day7/example1.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        8 => {
-            match input {
-                0 => day8::Day8::solve(include_str!("../data/day8/input.txt")),
-                1 => day8::Day8::solve(include_str!("../data/day8/example1.txt")),
-                2 => day8::Day8::solve(include_str!("../data/day8/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        9 => {
-            match input {
-                0 => day9::Day9::solve(include_str!("../data/day9/input.txt")),
-                1 => day9::Day9::solve(include_str!("../data/day9/example1.txt")),
-                2 => day9::Day9::solve(include_str!("../data/day9/example1.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        10 => {
-            match input {
-                0 => day10::Day10::solve(include_str!("../data/day10/input.txt")),
-                1 => day10::Day10::solve(include_str!("../data/day10/example1.txt")),
-                2 => day10::Day10::solve(include_str!("../data/day10/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        11 => {
-            match input {
-                0 => day11::Day11::solve(include_str!("../data/day11/input.txt")),
-                1 => day11::Day11::solve(include_str!("../data/day11/example1.txt")),
-                // 2 => day11::Day11::solve(include_str!("../data/day11/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        12 => {
-            match input {
-                0 => day12::Day12::solve(include_str!("../data/day12/input.txt")),
-                1 => day12::Day12::solve(include_str!("../data/day12/example1.txt")),
-                2 => day12::Day12::solve(include_str!("../data/day12/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        13 => {
-            match input {
-                0 => day13::Day13::solve(include_str!("../data/day13/input.txt")),
-                1 => day13::Day13::solve(include_str!("../data/day13/example1.txt")),
-                2 => day13::Day13::solve(include_str!("../data/day13/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        14 => {
-            match input {
-                0 => day14::Day14::solve(include_str!("../data/day14/input.txt")),
-                1 => day14::Day14::solve(include_str!("../data/day14/example1.txt")),
-                2 => day14::Day14::solve(include_str!("../data/day14/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        15 => {
-            match input {
-                0 => day15::Day15::solve(include_str!("../data/day15/input.txt")),
-                1 => day15::Day15::solve(include_str!("../data/day15/example1.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        16 => {
-            match input {
-                0 => day16::Day16::solve(include_str!("../data/day16/input.txt")),
-                1 => day16::Day16::solve(include_str!("../data/day16/example1.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        17 => {
-            match input {
-                0 => day17::Day17::solve(include_str!("../data/day17/input.txt")),
-                1 => day17::Day17::solve(include_str!("../data/day17/example1.txt")),
-                // 2 => day17::Day17::solve(include_str!("../data/day17/example2.txt")),
-                _ => (String::from("Invalid..."), String::from("...input")),
-            };
-        }
-        _ => (),
-    }
+        3 => day3::Day3::solve(input_str.as_str()),
+        4 => day4::Day4::solve(input_str.as_str()),
+        5 => day5::Day5::solve(input_str.as_str()),
+        6 => day6::Day6::solve(input_str.as_str()),
+        7 => day7::Day7::solve(input_str.as_str()),
+        8 => day8::Day8::solve(input_str.as_str()),
+        9 => day9::Day9::solve(input_str.as_str()),
+        10 => day10::Day10::solve(input_str.as_str()),
+        11 => day11::Day11::solve(input_str.as_str()),
+        12 => day12::Day12::solve(input_str.as_str()),
+        13 => day13::Day13::solve(input_str.as_str()),
+        14 => day14::Day14::solve(input_str.as_str()),
+        15 => day15::Day15::solve(input_str.as_str()),
+        16 => day16::Day16::solve(input_str.as_str()),
+        17 => day17::Day17::solve(input_str.as_str()),
+        _ => (
+            String::from("Not implemented"),
+            String::from("Not implemented"),
+        ),
+    };
+
+    Ok(())
 }
