@@ -40,36 +40,34 @@ class AOC:
         self.year = year
         self.day = day
         self.update = False
-        self.session = self.__get_session()
-
-    def __log_step(self, step: str):
-        log.info(f"{step} for {self.year} day {self.day}...")
+        self.builder = Builder()
 
     def build(self):
         try:
             self.__log_step("Setting up structure")
-            self.__create_structure()
+            self.builder.create_structure(self.__get_data_path())
         except FileExistsError as e:
             log.warning(e)
             self.__set_update(True)
 
+        session = self.__get_session()
         self.__log_step("Downloading problem")
-        self.__download_problem()
+        self.builder.download_problem(
+            self.__get_url(), session, self.__get_problem_path()
+        )
 
         if not self.__updating():
             self.__log_step("Downloading input")
-            self.__download_input()
+            self.builder.download_input(
+                self.__get_input_url(), session, self.__get_input_path()
+            )
             self.__log_step("Setting up program")
-            self.__setup_program()
+            self.builder.setup_program(self.__get_src_path(), self.__get_template())
 
         self.__log_step("Building successful")
 
-    def __create_structure(self):
-        path = self.__get_data_path()
-        try:
-            os.makedirs(path)
-        except FileExistsError:
-            raise FileExistsError(f"Path {path} already exists.")
+    def __log_step(self, step: str):
+        log.info(f"{step} for {self.year} day {self.day}...")
 
     def __get_problem_path(self) -> str:
         return f"{self.__get_data_path()}/problem.md"
@@ -86,28 +84,6 @@ class AOC:
             sys.exit(1)
 
         return s
-
-    def __download_problem(self):
-        text = self.__get_text_from_url(self.__get_url())
-
-        articles = self.__get_articles_from_html(text)
-
-        self.__write_problem(articles)
-        self.__write_examples(articles)
-
-    def __download_input(self) -> None:
-        text = self.__get_text_from_url(f"{self.__get_url()}/input")
-
-        self.__write_text_in_file(text, self.__get_input_path())
-
-    def __setup_program(self):
-        path = self.__get_src_path()
-
-        if os.path.exists(path):
-            log.warning(f"File {path} already exists.")
-            return
-
-        self.__write_text_in_file(self.__get_template(), path)
 
     def __get_template(self) -> str:
         return f"""use crate::Solution;
@@ -132,42 +108,6 @@ impl Solution for Day{self.day} {{
     def __get_src_path(self) -> str:
         return f"src/aoc{self.year}/day{self.day}.rs"
 
-    def __write_text_in_file(self, text: str, path: str):
-        with open(path, "w") as f:
-            f.write(text)
-
-    def __write_problem(self, articles: list):
-        with open(self.__get_problem_path(), "w") as f:
-            for article in articles:
-                f.write(html2text(str(article)))
-
-    def __write_examples(self, articles: list):
-        for index, article in enumerate(articles):
-            try:
-                code = article.find("pre").find("code")
-                with open(f"{self.__get_data_path()}/example{index + 1}.txt", "w") as f:
-                    f.write(delete_tags(str(code)))
-            except AttributeError:
-                raise AttributeError(f"There is no atributte 'pre' in the article.")
-
-    def __get_text_from_url(self, url: str) -> str:
-        r = self.session.get(url)
-
-        if r.status_code != 200:
-            raise Exception(f"Could not download {url}.")
-
-        return r.text
-
-    def __get_articles_from_html(self, html: str) -> list:
-        soup = BeautifulSoup(html, "html.parser")
-
-        articles = soup.find_all("article")
-
-        if articles == None:
-            raise Exception(f"There are no articles in the html.")
-
-        return articles
-
     def __set_update(self, update: bool):
         self.update = update
 
@@ -177,15 +117,80 @@ impl Solution for Day{self.day} {{
     def __get_url(self) -> str:
         return f"{self.URL}/{self.year}/day/{self.day}"
 
+    def __get_input_url(self) -> str:
+        return f"{self.__get_url()}/input"
+
     def __get_data_path(self) -> str:
         return f"{self.DATA}/aoc{self.year}/day{self.day}"
 
 
-def delete_tags(text: str) -> str:
-    clean = re.compile("<.*?>")
-    cleantext = re.sub(clean, "", text)
+class Builder:
+    def create_structure(self, path: str):
+        try:
+            os.makedirs(path)
+        except FileExistsError:
+            raise FileExistsError(f"Path {path} already exists.")
 
-    return cleantext
+    def download_problem(self, url: str, session: Session, path: str):
+        text = self.get_text_from_url(url, session)
+
+        articles = self.get_articles_from_html(text)
+
+        self.write_problem(articles, path)
+        self.write_examples(articles, path)
+
+    def download_input(self, url: str, session: Session, input_path: str):
+        text = self.get_text_from_url(url, session)
+
+        self.write_text_in_file(text, input_path)
+
+    def setup_program(self, path: str, template: str):
+        if os.path.exists(path):
+            log.warning(f"File {path} already exists.")
+            return
+
+        self.write_text_in_file(template, path)
+
+    def write_text_in_file(self, text: str, path: str):
+        with open(path, "w") as f:
+            f.write(text)
+
+    def write_problem(self, articles: list, path: str):
+        with open(path, "w") as f:
+            for article in articles:
+                f.write(html2text(str(article)))
+
+    def write_examples(self, articles: list, path: str):
+        for index, article in enumerate(articles):
+            try:
+                code = article.find("pre").find("code")
+                with open(f"{path}/example{index + 1}.txt", "w") as f:
+                    f.write(self.delete_tags(str(code)))
+            except AttributeError:
+                raise AttributeError(f"There is no atributte 'pre' in the article.")
+
+    def get_text_from_url(self, url: str, session: Session) -> str:
+        r = session.get(url)
+
+        if r.status_code != 200:
+            raise Exception(f"Could not download {url}.")
+
+        return r.text
+
+    def get_articles_from_html(self, html: str) -> list:
+        soup = BeautifulSoup(html, "html.parser")
+
+        articles = soup.find_all("article")
+
+        if articles == None:
+            raise Exception(f"There are no articles in the html.")
+
+        return articles
+
+    def delete_tags(self, text: str) -> str:
+        clean = re.compile("<.*?>")
+        cleantext = re.sub(clean, "", text)
+        return cleantext
 
 
 @app.command()
