@@ -7,8 +7,9 @@ use aoc23::solve_day;
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() != 3 {
-        println!("Usage: {} <number 1-25> <input 0-2>", args[0]);
+    if args.len() != 4 {
+        println!("Usage: {} <year 2019-2023> <day 1-25> <input 0-2>", args[0]);
+        println!("    year: the year you want to choose the day from");
         println!("    number: the day you want to get the answer");
         println!("    input:  the input you want to use");
         println!("        - 0: full input");
@@ -17,8 +18,12 @@ fn main() {
         return;
     }
 
-    let number: u8 = args[1].parse().unwrap_or(0);
-    let input: u8 = args[2].parse().unwrap_or(0);
+    let year: u16 = args[1].parse().unwrap_or(0);
+    let number: u8 = args[2].parse().unwrap_or(0);
+    let input: u8 = args[3].parse().unwrap_or(0);
     
-    solve_day(number, input);
+    match solve_day(year, number, input) {
+        Ok(_) => (),
+        Err(e) => println!("Error: {}", e),
+    }
 }
