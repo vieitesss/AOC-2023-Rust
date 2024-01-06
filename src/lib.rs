@@ -72,14 +72,15 @@ pub trait Solution {
 }
 
 pub fn solve_day(year: u16, day: u8, input: u8) -> std::io::Result<()> {
+    let data_path = format!("data/aoc{}/day{}", year, day);
     let mut input_str = String::new();
 
     match input {
-        0 => File::open(format!("data/aoc{}/day{}/input.txt", year, day).as_str())?
+        0 => File::open(format!("{}/input.txt", data_path).as_str())?
             .read_to_string(&mut input_str)?,
-        1 => File::open(format!("data/aoc{}/day{}/example1.txt", year, day).as_str())?
+        1 => File::open(format!("{}/example1.txt", data_path).as_str())?
             .read_to_string(&mut input_str)?,
-        2 => File::open(format!("data/aoc{}/day{}/example2.txt", year, day).as_str())?
+        2 => File::open(format!("{}/example2.txt", data_path).as_str())?
             .read_to_string(&mut input_str)?,
         _ => panic!("Invalid input"),
     };
