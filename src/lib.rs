@@ -37,17 +37,31 @@ pub trait Solution {
         let now = Instant::now();
         let input = Self::parse_input(input_lines);
         let parse_time = now.elapsed().as_micros();
-        println!("Parsing: {:2}.{:03} ms", parse_time / 1000, parse_time & 1000);
+        println!(
+            "Parsing: {:2}.{:03} ms",
+            parse_time / 1000,
+            parse_time & 1000
+        );
 
         let now = Instant::now();
         let p1 = Self::part_1(&input);
         let part1_time = now.elapsed().as_micros();
-        println!("Part 1: {:3}.{:03} ms -> {}", part1_time / 1000, part1_time & 1000, p1);
+        println!(
+            "Part 1: {:3}.{:03} ms -> {}",
+            part1_time / 1000,
+            part1_time & 1000,
+            p1
+        );
 
         let now = Instant::now();
         let p2 = Self::part_2(input);
         let part2_time = now.elapsed().as_micros();
-        println!("Part 2: {:3}.{:03} ms -> {}", part2_time / 1000, part2_time & 1000, p2);
+        println!(
+            "Part 2: {:3}.{:03} ms -> {}",
+            part2_time / 1000,
+            part2_time & 1000,
+            p2
+        );
         (p1, p2)
     }
 }
