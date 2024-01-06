@@ -55,6 +55,10 @@ class AOC:
         self.builder.download_problem(
             self.__get_url(), session, self.__get_problem_path()
         )
+        self.__log_step("Downloading examples")
+        self.builder.download_examples(
+            self.__get_url(), session, self.__get_data_path()
+        )
 
         if not self.__updating():
             self.__log_step("Downloading input")
@@ -133,10 +137,14 @@ class Builder:
 
     def download_problem(self, url: str, session: Session, path: str):
         text = self.get_text_from_url(url, session)
-
         articles = self.get_articles_from_html(text)
 
         self.write_problem(articles, path)
+
+    def download_examples(self, url: str, session: Session, path: str):
+        text = self.get_text_from_url(url, session)
+        articles = self.get_articles_from_html(text)
+
         self.write_examples(articles, path)
 
     def download_input(self, url: str, session: Session, input_path: str):
@@ -156,16 +164,16 @@ class Builder:
             f.write(text)
 
     def write_problem(self, articles: list, path: str):
-        with open(path, "w") as f:
-            for article in articles:
-                f.write(html2text(str(article)))
+        for article in articles:
+            self.write_text_in_file(html2text(str(article)), path)
 
     def write_examples(self, articles: list, path: str):
-        for index, article in enumerate(articles):
+        for i, article in enumerate(articles):
             try:
                 code = article.find("pre").find("code")
-                with open(f"{path}/example{index + 1}.txt", "w") as f:
-                    f.write(self.delete_tags(str(code)))
+                self.write_text_in_file(
+                    self.delete_tags(str(code)), f"{path}/example{i + 1}.txt"
+                )
             except AttributeError:
                 raise AttributeError(f"There is no atributte 'pre' in the article.")
 
