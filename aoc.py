@@ -48,7 +48,7 @@ class AOC:
             self.builder.create_structure(self.__get_data_path())
         except FileExistsError as e:
             log.warning(e)
-            self.__set_update(True)
+            self.update = True
 
         session = self.__get_session()
         self.__log_step("Downloading problem")
@@ -60,7 +60,7 @@ class AOC:
             self.__get_url(), session, self.__get_data_path()
         )
 
-        if not self.__updating():
+        if not self.update:
             self.__log_step("Downloading input")
             self.builder.download_input(
                 self.__get_input_url(), session, self.__get_input_path()
@@ -111,12 +111,6 @@ impl Solution for Day{self.day} {{
 
     def __get_src_path(self) -> str:
         return f"src/aoc{self.year}/day{self.day}.rs"
-
-    def __set_update(self, update: bool):
-        self.update = update
-
-    def __updating(self) -> bool:
-        return self.update
 
     def __get_url(self) -> str:
         return f"{self.URL}/{self.year}/day/{self.day}"
