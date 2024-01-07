@@ -161,19 +161,14 @@ class Builder:
 
     def write_examples(self, articles: list, path: str):
         for i, article in enumerate(articles):
-            try:
-                code = article.find("pre").find("code")
-                self.write_text_in_file(
-                    self.delete_tags(str(code)), f"{path}/example{i + 1}.txt"
-                )
-            except AttributeError:
-                raise AttributeError(f"There is no atributte 'pre' in the article.")
+            code = article.find("pre").find("code")
+            self.write_text_in_file(
+                self.delete_tags(str(code)), f"{path}/example{i + 1}.txt"
+            )
 
     def get_text_from_url(self, url: str, session: Session) -> str:
         r = session.get(url)
-
-        if r.status_code != 200:
-            raise Exception(f"Could not download {url}.")
+        r.raise_for_status() # exception if status code is not 200
 
         return r.text
 
@@ -184,7 +179,8 @@ class Builder:
         articles = soup.find_all("article")
 
         if articles == None:
-            raise Exception(f"There are no articles in the html.")
+            log.warning(f"There are no articles in the html.")
+            return []
 
         return articles
 
