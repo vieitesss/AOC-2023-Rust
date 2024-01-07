@@ -130,14 +130,12 @@ class Builder:
             raise FileExistsError(f"Path {path} already exists.")
 
     def download_problem(self, url: str, session: Session, path: str):
-        text = self.get_text_from_url(url, session)
-        articles = self.get_articles_from_html(text)
+        articles = self.get_articles_from_url(url, session)
 
         self.write_problem(articles, path)
 
     def download_examples(self, url: str, session: Session, path: str):
-        text = self.get_text_from_url(url, session)
-        articles = self.get_articles_from_html(text)
+        articles = self.get_articles_from_url(url, session)
 
         self.write_examples(articles, path)
 
@@ -179,7 +177,8 @@ class Builder:
 
         return r.text
 
-    def get_articles_from_html(self, html: str) -> list:
+    def get_articles_from_url(self, url: str, session: Session) -> list:
+        html = self.get_text_from_url(url, session)
         soup = BeautifulSoup(html, "html.parser")
 
         articles = soup.find_all("article")
